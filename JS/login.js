@@ -1,55 +1,44 @@
-const form = document.getElementById("login-form");
-const emailInput = document.getElementById("login-email");
-const passwordInput = document.getElementById("login-password");
+// login.js
+const loginForm = document.getElementById("login-form");
+const loginEmail = document.getElementById("login-email");
+const loginPassword = document.getElementById("login-password");
 
-function showError(input, message) {
-    const formControl = input.parentElement;
-    formControl.className = "login-form-control error";
-    const small = formControl.querySelector("small");
-    if (small) small.innerText = message;
+// Validate email format
+function validateEmail(email) {
+    const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return re.test(email);
 }
 
-function showSuccess(input) {
-    const formControl = input.parentElement;
-    formControl.className = "login-form-control success";
+// Authenticate user
+function authenticateUser(email, password) {
+    const users = JSON.parse(localStorage.getItem("users")) || [];
+    const user = users.find(user => user.email === email);
+
+    return user && user.password === password;
 }
 
-function validateEmail(input) {
-    const re = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
-    if (re.test(input.value.trim())) {
-        showSuccess(input);
-        return true;
-    } else {
-        showError(input, "Invalid email format");
-        return false;
-    }
-}
+// Form submission event
+loginForm.addEventListener("submit", function (e) {
+    e.preventDefault();
 
-function validateLogin(email, password) {
-    const storedUsers = JSON.parse(localStorage.getItem("users")) || [];
-    const user = storedUsers.find((user) => user.email === email);
+    const emailValue = loginEmail.value.trim();
+    const passwordValue = loginPassword.value.trim();
 
-    if (user && user.password === password) {
-        return true;
-    } else {
-        return false;
-    }
-}
-
-// Event listener for form submission
-form.addEventListener("submit", function (e) {
-    e.preventDefault(); // Prevent default form submission
-
-    const email = emailInput.value.trim();
-    const password = passwordInput.value.trim();
-
-    if (!validateEmail(email)) {
-        alert("Please enter a valid email.");
+    // Validate email and password
+    if (!emailValue || !passwordValue) {
+        alert("Both fields are required.");
         return;
     }
 
-    if (validateLogin(email, password)) {
-        window.location.href = "home.html"; // Redirect to home if login is successful
+    if (!validateEmail(emailValue)) {
+        alert("Invalid email format.");
+        return;
+    }
+
+    // Authenticate user
+    if (authenticateUser(emailValue, passwordValue)) {
+        alert("Login successful!");
+        window.location.href = "home.html"; // Redirect to the home page
     } else {
         alert("Invalid email or password.");
     }
